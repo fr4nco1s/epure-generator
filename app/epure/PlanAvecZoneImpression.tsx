@@ -127,7 +127,7 @@ export default function PlanAvecZoneImpression({ svgWidth, svgHeight, svgPlan })
         <div style={{width: "100%", height: "100%", position: "relative"}}>
             <div style={{position: "absolute", top: 10, left: 10, zIndex: 10, display: "flex", gap: 10}}>
                 <button onClick={handlePrint}>🖨️ Imprimer la zone</button>
-                <button onClick={() => setRotation(prev => (prev === 0 ? 90 : 0))}>🔄 Tourner rectangle</button>
+                <button onClick={() => setRotation(prev => (prev === 0 ? 90 : 0))}>🔄 Tourner la zonne d'impression</button>
             </div>
 
             <svg

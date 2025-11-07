@@ -122,12 +122,59 @@ export default function PlanAvecZoneImpression({ svgWidth, svgHeight, svgPlan })
   `);
         printWindow.document.close();
     };
+    const handleDownload = async () => {
+        const svg = svgRef.current;
+        const serializer = new XMLSerializer();
+        if(!svg){
+            return
+        }
+        // Crée un SVG temporaire qui ne contient que la zone sélectionnée
+        // on prend uniquement les enfants sauf le rectangle bleu
+        const svgChildren = Array.from(svgRef.current.children)
+            .filter(el => el.tagName.toLowerCase() !== "rect")
+            .map(el => el.outerHTML)
+            .join("");
 
+
+        const rectWidth = A4_WIDTH ;
+        const rectHeight =  A4_HEIGHT ;
+        const centerX = pos.x + A4_WIDTH / 2;
+        const centerY = pos.y + A4_HEIGHT / 2;
+
+        const tempSvg = `
+<svg xmlns="http://www.w3.org/2000/svg" width="${rectWidth}" height="${rectHeight}">
+  <g transform="
+      translate(${rectWidth / 2}, ${rectHeight / 2})
+      rotate(${-rotation})
+      translate(${-centerX}, ${-centerY})
+  ">
+    ${svgChildren}
+  </g>
+</svg>
+`;
+
+        const canvas = document.createElement("canvas");
+        canvas.width = A4_WIDTH;
+        canvas.height = A4_HEIGHT;
+        const ctx = canvas.getContext("2d");
+
+        const v = await Canvg.fromString(ctx, tempSvg);
+        await v.render();
+
+        const dataUrl = canvas.toDataURL("image/png");
+
+        const link = document.createElement("a");
+        link.href = dataUrl;
+        link.download = "epure.png";
+        link.click();
+    };
     return (
         <div style={{width: "100%", height: "100%", position: "relative"}}>
             <div style={{position: "absolute", top: 10, left: 10, zIndex: 10, display: "flex", gap: 10}}>
+                <button onClick={handleDownload}>📥 Télécharger l’image</button>
                 <button onClick={handlePrint}>🖨️ Imprimer la zone</button>
-                <button onClick={() => setRotation(prev => (prev === 0 ? 90 : 0))}>🔄 Tourner la zonne d'impression</button>
+                <button onClick={() => setRotation(prev => (prev === 0 ? 90 : 0))}>🔄 Tourner la zonne d'impression
+                </button>
             </div>
 
             <svg

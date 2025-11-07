@@ -334,32 +334,6 @@ export function Epure() {
   const svgWidth = 2000;
   const svgHeight = 1500;
 
-  // === LIGNE JAUNE PARALLÈLE ===
-  let jauneParallele = null;
-  if (pointIntersectionGauche) {
-    const x1 = pointIntersectionGauche.x;
-    const y1 = pointIntersectionGauche.y;
-    const x2 = jauneX2;
-    const y2 = jauneY2;
-
-    const vx = x2 - x1;
-    const vy = y2 - y1;
-    const len = Math.sqrt(vx * vx + vy * vy);
-
-    // vecteur normal unitaire (perpendiculaire)
-    const nx = -vy / len;
-    const ny = vx / len;
-
-    // décalage parallèle
-    const d = -parallelDistance; // déjà converti en px
-    jauneParallele = {
-      x1: x1 + nx * d,
-      y1: y1 + ny * d,
-      x2: x2 + nx * d,
-      y2: y2 + ny * d,
-    };
-  }
-
   const svgPlan = (
       <>
         {/* Cercle bleu */}
@@ -464,18 +438,6 @@ export function Epure() {
             />
         )
         }
-
-        {jauneParallele && (
-            <line
-                x1={jauneParallele.x1}
-                y1={jauneParallele.y1}
-                x2={jauneParallele.x2}
-                y2={jauneParallele.y2}
-                stroke="yellow"
-                strokeWidth={2}
-            />
-        )}
-
         {pointIntersectionGauche && (
             <circle
                 cx={jauneX2}

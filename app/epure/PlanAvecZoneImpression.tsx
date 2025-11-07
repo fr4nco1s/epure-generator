@@ -4,8 +4,8 @@ import { Canvg } from "canvg";
 const CM_TO_PX = 37.7952755906;
 const A4_WIDTH = 21 * CM_TO_PX;
 const A4_HEIGHT = 29.686 * CM_TO_PX;
-
-export default function PlanAvecZoneImpression({ svgWidth, svgHeight, svgPlan }) {
+const cmToPx = (cm) => cm * 37.7952755906;
+export default function PlanAvecZoneImpression({ svgWidth, svgHeight, svgPlan, params }) {
     const [pos, setPos] = useState({ x: 50, y: 50 });
     const [dragging, setDragging] = useState(false);
     const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -109,14 +109,81 @@ export default function PlanAvecZoneImpression({ svgWidth, svgHeight, svgPlan })
         await v.render();
 
         const dataUrl = canvas.toDataURL("image/png");
+        // 🔹 Contenu de la deuxième page : paramètres
+        const parameters = [
+            `Angle : ${params.angle} °`,
+            `Rayon de cintrage : ${params.rayonCm} cm`,
+            `Diamètre du tube :${params.diametreTubeCm} cm`,
+        ];
+
+        const paramsHtml = parameters.map(p => `<div>${p}</div>`).join("");
+
+        // 🔹 Bande SVG : paramètres visuels
+        const espacementLignes = cmToPx(Math.PI*params.diametreTubeCm/4); // espacement entre traits
+        const bandeWidth = cmToPx(2); // largeur bande
+
+        // Génération du SVG pour la bande
+        let bandLines = "";
+        for (let y = 0; y <= rectHeight; y += espacementLignes) {
+            const x1 = 0;
+            const x2 = bandeWidth;
+            bandLines += `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="black" stroke-width="1"/>`;
+        }
+
+        const bandeSvg = `
+<svg xmlns="http://www.w3.org/2000/svg" width="${bandeWidth}" height="${rectHeight}">
+  <rect width="100%" height="100%" fill="white" stroke="black" stroke-width="1"/>
+  ${bandLines}
+</svg>
+`;
 
         const printWindow = window.open("", "_blank");
         printWindow.document.write(`
     <html>
-      <head><title>Zone à imprimer</title></head>
+      <head><title>Zone à imprimer</title>
+           <style>
+          body { margin: 0; font-family: Arial, sans-serif; }
+          .page { page-break-after: always; text-align: center; }
+          .params-page {
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            width: 100%;
+            height: ${rectHeight}px;
+          }
+          .params-content {
+            flex: 1;
+            padding: 40px;
+            font-size: 14px;
+            text-align: left;
+          }
+          .params-content h2 {
+            margin-top: 0;
+          }
+          .bande {
+            width: ${bandeWidth}px;
+            flex-shrink: 0;
+            border-left: 2px solid black;
+          }
+          @page { size: ${rectWidth}px ${rectHeight}px; margin: 0; }
+        </style>
+        </head>
       <body style="margin:0">
+      <!-- PAGE 1 -->
+       <div class="page">
         <img src="${dataUrl}" style="width:100%;height:auto"/>
         <script>window.onload = () => window.print()</script>
+         </div>
+        <!-- PAGE 2 -->
+        <div class="page params-page">
+          <div class="params-content">
+            <h2>Paramètres utilisés</h2>
+            ${paramsHtml}
+          </div>
+          <div class="bande">
+            ${bandeSvg}
+          </div>
+        </div>
       </body>
     </html>
   `);

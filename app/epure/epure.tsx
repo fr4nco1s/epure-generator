@@ -3,11 +3,11 @@ import PlanAvecZoneImpression from "~/epure/PlanAvecZoneImpression";
 const cmToPx = (cm) => cm * 37.7952755906;
 
 export function Epure() {
-  const [radiusCm, setRadiusCm] = useState(7.5); // en cm
+  const [rayonCm, setRayonCm] = useState(7.5); // en cm
   const [angle, setAngle] = useState(135);
 
   const [diametreTubeCm, setdiametreTubeCm] = useState(3.4); // en cm
-  const radius = cmToPx(radiusCm);
+  const radius = cmToPx(rayonCm);
   const rayonTubeCm = diametreTubeCm / 2
   const parallelDistance = cmToPx(rayonTubeCm); // conversion pour le SVG
 
@@ -532,6 +532,11 @@ export function Epure() {
       </>
   );
 
+  const params = {
+    rayonCm,
+    diametreTubeCm,
+    angle
+  }
   return (
       <div style={{display: "flex", height: "100vh"}}>
         {/* Paramètres */}
@@ -547,14 +552,14 @@ export function Epure() {
         >
           <h2>Paramètres</h2>
           <div>
-            <label>Rayon de cintrage : {radiusCm.toFixed(1)} cm</label>
+            <label>Rayon de cintrage : {rayonCm.toFixed(1)} cm</label>
             <input
                 type="number"
                 min="0.5"
                 max="10"
                 step="0.1"
-                value={radiusCm}
-                onChange={(e) => setRadiusCm(Number(e.target.value))}
+                value={rayonCm}
+                onChange={(e) => setRayonCm(Number(e.target.value))}
                 style={{width: "100%"}}
             />
           </div>
@@ -587,7 +592,7 @@ export function Epure() {
           </div>
         </div>
         <div style={{flex: 1, position: "relative"}}>
-          <PlanAvecZoneImpression svgWidth={svgWidth} svgHeight={svgHeight} svgPlan={svgPlan}/>
+          <PlanAvecZoneImpression svgWidth={svgWidth} svgHeight={svgHeight} svgPlan={svgPlan} params={params}/>
         </div>
       </div>
   );

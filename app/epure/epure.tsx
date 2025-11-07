@@ -333,7 +333,58 @@ export function Epure() {
   }
   const svgWidth = 2000;
   const svgHeight = 1500;
+  let perpendicularLine = null;
+  if (pointIntersectionGauche) {
+    // vecteur directeur de lineB
+    const dx = lineB.x2 - lineB.x1;
+    const dy = lineB.y2 - lineB.y1;
+    const len = Math.sqrt(dx * dx + dy * dy);
 
+    // vecteur perpendiculaire unitaire
+    const ux = -dy / len;
+    const uy = dx / len;
+
+    const perpLength = 200; // longueur de la perpendiculaire
+    perpendicularLine = {
+      x1: pointIntersectionGauche.x - ux * perpLength,
+      y1: pointIntersectionGauche.y - uy * perpLength,
+      x2: pointIntersectionGauche.x + ux * perpLength,
+      y2: pointIntersectionGauche.y + uy * perpLength,
+    };
+  }
+  let intersectionPerpTrunc = null;
+  if (perpendicularLine && truncatedLineB) {
+    intersectionPerpTrunc = lineIntersection(
+        perpendicularLine.x1,
+        perpendicularLine.y1,
+        perpendicularLine.x2,
+        perpendicularLine.y2,
+        truncatedLineB.x1,
+        truncatedLineB.y1,
+        truncatedLineB.x2,
+        truncatedLineB.y2
+    );
+  }
+
+  let extendedYellowLineFromStart = null;
+  if (truncatedLineB) {
+    // vecteur directeur de truncatedLineB
+    const dirX = truncatedLineB.x2 - truncatedLineB.x1;
+    const dirY = truncatedLineB.y2 - truncatedLineB.y1;
+    const len = Math.sqrt(dirX * dirX + dirY * dirY);
+
+    // vecteur unitaire dans le sens opposé
+    const ux = -dirX / len;
+    const uy = -dirY / len;
+
+    // ligne prolongée depuis x1, y1
+    extendedYellowLineFromStart = {
+      x1: truncatedLineB.x1,
+      y1: truncatedLineB.y1,
+      x2: truncatedLineB.x1 + ux * longueurArc,
+      y2: truncatedLineB.y1 + uy * longueurArc,
+    };
+  }
   const svgPlan = (
       <>
         {/* Cercle bleu */}
@@ -351,14 +402,6 @@ export function Epure() {
         <line x1={t1x} y1={t1y} x2={red1x} y2={red1y} stroke="red" strokeWidth={2}/>
         <line x1={t2x} y1={t2y} x2={red2x} y2={red2y} stroke="red" strokeWidth={2}/>
 
-        {/* Droites vertes prolongées */}
-        {/*{greenLines.map((l, i) => (*/}
-        {/*    <line key={i} x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} stroke="green" strokeWidth={2} />*/}
-        {/*))}*/}
-
-        {/* Cercle violet */}
-        {/*<circle cx={circleAuto1.cx} cy={circleAuto1.cy} r={circleAuto1.r} fill="none" stroke="purple" strokeWidth={2} />*/}
-        {/*<circle cx={circleAuto2.cx} cy={circleAuto2.cy} r={circleAuto2.r} fill="none" stroke="yellow" strokeWidth={2} />*/}
 
         {/* Arc vert (petit arc du cercle violet) — construit avec flags corrects */}
         {greenArcPath && (
@@ -447,19 +490,48 @@ export function Epure() {
             />
         )
         }
+
+        {intersectionPerpTrunc && (
+            <circle
+                cx={intersectionPerpTrunc.x}
+                cy={intersectionPerpTrunc.y}
+                r={4}
+                fill="yellow"
+            />
+        )}
+
+        {extendedYellowLineFromStart && (
+            <line
+                x1={extendedYellowLineFromStart.x1}
+                y1={extendedYellowLineFromStart.y1}
+                x2={extendedYellowLineFromStart.x2}
+                y2={extendedYellowLineFromStart.y2}
+                stroke="yellow"
+                strokeWidth={2}
+            />
+        )}
+
+        {extendedYellowLineFromStart && (
+            <circle
+                cx={extendedYellowLineFromStart.x2}
+                cy={extendedYellowLineFromStart.y2}
+                r={4}           // taille du point
+                fill="yellow"   // couleur du point
+            />
+        )}
+        {truncatedLineB && (
+            <line
+                x1={truncatedLineB.x1}
+                y1={truncatedLineB.y1}
+                x2={intersectionPerpTrunc.x}
+                y2={intersectionPerpTrunc.y}
+                stroke="yellow"
+                strokeWidth={2}
+            />
+        )}
       </>
   );
 
-
-  // const svgPlan = (
-  //     <>
-  //       <rect width="100%" height="100%" fill="#f8f8f8" />
-  //       <circle cx="400" cy="400" r="120" fill="none" stroke="blue" strokeWidth="2" />
-  //       <text x="350" y="410" fontSize="30" fill="#333">
-  //         Plan d’essai
-  //       </text>
-  //     </>
-  // );
   return (
       <div style={{display: "flex", height: "100vh"}}>
         {/* Paramètres */}
